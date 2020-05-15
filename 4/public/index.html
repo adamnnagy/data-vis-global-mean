@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Module 2 - Intro</title>
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.6.0/dist/leaflet.css"
+      integrity="sha512-xwE/Az9zrjBIphAcBb3F6JVqxf46+CDLwfLMHloNu6KEQCAWi6HcDUbeOfBIptF7tcCzusKFjFw2yuvEpDL9wQ=="
+      crossorigin=""
+    />
+    <!-- Make sure you put this AFTER Leaflet's CSS -->
+    <script
+      src="https://unpkg.com/leaflet@1.6.0/dist/leaflet.js"
+      integrity="sha512-gZwIG9x3wUXg2hdXF6+rVkLF/0Vi9U8D2Ntg4Ga5I5BZpVkVxlJWbSQtXPSiUTtC0TjtGOmxa1AJPuV0CPthew=="
+      crossorigin=""
+    ></script>
+
+    <style>
+      #userMap {
+        height: 480px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Data Selfie App</h1>
+
+    <p>
+      latitude: <span id="latitude"></span>°<br />
+      longitude: <span id="longitude"></span>°
+    </p>
+
+    <button id="button-1">Geolocate</button>
+    <button id="button-2">Show on Map</button>
+
+    <div id="userMap"></div>
+
+    <script>
+      const attribution =
+        '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetmap</a>';
+      const tileUrl = "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png";
+      const tiles = L.tileLayer(tileUrl, { attribution });
+      const userMap = L.map("userMap").setView([0, 0], 1);
+
+      tiles.addTo(userMap);
+
+
+      function getUserPosition() {
+        if ("geolocation" in navigator) {
+          console.log("geolocation IS available");
+          navigator.geolocation.getCurrentPosition((position) => {
+            const { latitude, longitude } = position.coords;
+            document.getElementById("latitude").textContent = latitude.toFixed(
+              2
+            );
+            document.getElementById(
+              "longitude"
+            ).textContent = longitude.toFixed(2);
+            console.log(position);
+          });
+        } else {
+          console.log("geolocation IS NOT available");
+        }
+      }
+
+      function displayMap() {
+        
+        if ("geolocation" in navigator) {
+          console.log("geolocation IS available");
+          navigator.geolocation.getCurrentPosition((position) => {
+            const { latitude, longitude } = position.coords;
+            const coord = [latitude, longitude];
+            const marker = L.marker([latitude, longitude]).addTo(userMap);
+            marker.setLatLng([latitude, longitude]);
+            userMap.setView([latitude, longitude], 10);
+          });
+        } else {
+          console.log("geolocation IS NOT available");
+        }
+        
+        
+      }
+
+      const buttonPosition = document.getElementById("button-1");
+      buttonPosition.addEventListener("click", getUserPosition);
+      const buttonMap = document.getElementById("button-2");
+
+      buttonMap.addEventListener("click", function () {
+        displayMap();
+      });
+    </script>
+  </body>
+</html>
