@@ -45,11 +45,10 @@
 
       tiles.addTo(userMap);
 
-
       function getUserPosition() {
         if ("geolocation" in navigator) {
           console.log("geolocation IS available");
-          navigator.geolocation.getCurrentPosition((position) => {
+          navigator.geolocation.getCurrentPosition(async (position) => {
             const { latitude, longitude } = position.coords;
             document.getElementById("latitude").textContent = latitude.toFixed(
               2
@@ -57,7 +56,20 @@
             document.getElementById(
               "longitude"
             ).textContent = longitude.toFixed(2);
-            console.log(position);
+
+            //Posting to server api
+            const data = { latitude, longitude };
+            const options = {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify(data),
+            };
+
+            const response = await fetch("/api", options);
+            const json = await response.json();
+            console.log(json);
           });
         } else {
           console.log("geolocation IS NOT available");
@@ -65,7 +77,6 @@
       }
 
       function displayMap() {
-        
         if ("geolocation" in navigator) {
           console.log("geolocation IS available");
           navigator.geolocation.getCurrentPosition((position) => {
@@ -78,15 +89,13 @@
         } else {
           console.log("geolocation IS NOT available");
         }
-        
-        
       }
 
       const buttonPosition = document.getElementById("button-1");
       buttonPosition.addEventListener("click", getUserPosition);
       const buttonMap = document.getElementById("button-2");
 
-      buttonMap.addEventListener("click", function () {
+      buttonMap.addEventListener("click", () => {
         displayMap();
       });
     </script>
