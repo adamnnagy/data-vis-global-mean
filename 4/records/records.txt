@@ -49,3 +49,5 @@ latitude: 48.0598454, longitude: 20.7796447, date: Mon May 18 2020
 latitude: 48.0598454, longitude: 20.7796447, date: Mon May 18 2020
 latitude: 48.0598454, longitude: 20.7796447, date: Mon May 18 2020
 latitude: 48.0598454, longitude: 20.7796447, date: Mon May 18 2020
+latitude: 48.068374299999995, longitude: 20.777787, date: Mon May 18 2020
+latitude: 48.068374299999995, longitude: 20.777787, date: Mon May 18 2020
