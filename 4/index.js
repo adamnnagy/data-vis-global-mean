@@ -12,14 +12,13 @@ app.use(
   })
 );
 
-const coordinatesDatabase = new Datastore("coordinatesDatabase.db");
+const coordinatesDatabase = new Datastore("records/coordinatesDatabase.db");
 coordinatesDatabase.loadDatabase();
 
 app.get('/api', (request, response) => {
   coordinatesDatabase.find({}, (err, data) => {
     if (err) {
       console.log(err);
-      
     }
     response.json(data);
   })

@@ -4,6 +4,11 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Module 2 - Intro</title>
+    <!-- Compiled and minified CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
     <link
       rel="stylesheet"
       href="https://unpkg.com/leaflet@1.6.0/dist/leaflet.css"
@@ -17,124 +22,165 @@
       crossorigin=""
     ></script>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.0.0/p5.min.js"></script>
+
     <style>
-      #userMap {
-        height: 480px;
+      #userMap, #p5-canvas {
+        width: 480px;
+        height: 320px;
+      }
+      
+      .container {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: left;
+        
+      } 
+      img {
+        /* height: 50px; */
+      }
+      body {
+        margin: 4rem;
+      }
+      
+      .col  {
+        justify-content: space-between;
       }
     </style>
   </head>
   <body>
-    <h1>Data Selfie App</h1>
+    <div class="row">
+      <h1>Data Selfie App</h1>
+    </div>
 
-    <p>
-      latitude: <span id="latitude"></span>°<br />
-      longitude: <span id="longitude"></span>°
-    </p>
+    <div class="row">
+      <p>
+        latitude: <span id="latitude"></span>°<br />
+        longitude: <span id="longitude"></span>°
+      </p>
+    </div>
 
-    <input type="text" placeholder="Enter your name" id="name-input" />
+    <div class="row">
+      <input type="text" placeholder="I'm feeling..." id="mood-input" />
+  
+      <button id="button-1">Geolocate</button>
+      <button id="button-2">Show on Map</button>
+      <button id="button-3">List The Entries!</button>
+    </div>
 
-    <button id="button-1">Geolocate</button>
-    <button id="button-2">Show on Map</button>
-    <button id="button-3">List The Entries!</button>
-
-    <div id="userMap"></div>
+    <div class="row">
+      <div id="userMap" class="col-6"></div>
+      <div id="p5-canvas" class="col-6"></div>
+    </div>
 
     <script>
-      const attribution =
+      function setup() {
+        noCanvas();
+        const video = createCapture(VIDEO);
+        video.parent("p5-canvas");
+        video.size(480, 320);
+
+        
+        const attribution =
         '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetmap</a>';
-      const tileUrl = "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png";
-      const tiles = L.tileLayer(tileUrl, { attribution });
-      const userMap = L.map("userMap").setView([0, 0], 1);
+        const tileUrl = "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png";
+        const tiles = L.tileLayer(tileUrl, { attribution });
+        const userMap = L.map("userMap").setView([0, 0], 1);
+        
+        tiles.addTo(userMap);
+        
+        function getUserPosition() {
+          if ("geolocation" in navigator) {
+            navigator.geolocation.getCurrentPosition(async (position) => {
+              const { latitude, longitude } = position.coords;
+              video.loadPixels();
+              const image64 = video.canvas.toDataURL();
+              document.getElementById(
+                "latitude"
+                ).textContent = latitude.toFixed(2);
+                document.getElementById(
+                  "longitude"
+                  ).textContent = longitude.toFixed(2);
+                  
+              //Posting to server api
+              const data = { usermood: getUserMood(), latitude, longitude, image64 };
+              const options = {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify(data),
+              };
 
-      tiles.addTo(userMap);
-
-      function getUserPosition() {
-        if ("geolocation" in navigator) {
-          navigator.geolocation.getCurrentPosition(async (position) => {
-            const { latitude, longitude } = position.coords;
-            document.getElementById("latitude").textContent = latitude.toFixed(
-              2
-            );
-            document.getElementById(
-              "longitude"
-            ).textContent = longitude.toFixed(2);
-
-            //Posting to server api
-            console.log(getUserName());
-            const data = { username: getUserName(), latitude, longitude };
-            const options = {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify(data),
-            };
-
-            const response = await fetch("/api", options);
-            const json = await response.json();
-            console.log(json);
-          });
-        } else {
-          console.log("geolocation IS NOT available");
+              const response = await fetch("/api", options);
+              const json = await response.json();
+              console.log(json);
+            });
+          } else {
+            console.log("geolocation IS NOT available");
+          }
         }
-      }
 
-      function displayMap() {
-        if ("geolocation" in navigator) {
-          navigator.geolocation.getCurrentPosition((position) => {
-            const { latitude, longitude } = position.coords;
-            const coord = [latitude, longitude];
-            const marker = L.marker([latitude, longitude]).addTo(userMap);
-            marker.setLatLng([latitude, longitude]);
-            userMap.setView([latitude, longitude], 12);
-          });
-        } else {
-          console.log("geolocation IS NOT available");
+        function displayMap() {
+          if ("geolocation" in navigator) {
+            navigator.geolocation.getCurrentPosition((position) => {
+              const { latitude, longitude } = position.coords;
+              const coord = [latitude, longitude];
+              const marker = L.marker([latitude, longitude]).addTo(userMap);
+              marker.setLatLng([latitude, longitude]);
+              userMap.setView([latitude, longitude], 12);
+            });
+          } else {
+            console.log("geolocation IS NOT available");
+          }
         }
-      }
 
-      function getUserName() {
-        return document.getElementById("name-input").value;
-      }
-
-      async function getData() {
-        const response = await fetch("/api");
-        const data = await response.json();
-        console.log(data);
-        for (item of data) {
-          const root = document.createElement("div");
-          const name = document.createElement("div");
-          const geo = document.createElement("div");
-          const date = document.createElement("div");
-
-          name.textContent = `name: ${item.username}`;
-          geo.textContent = `${item.latitude}°, ${item.longitude}°`;
-          const dateString = new Date(item.timestamp).toLocaleString();
-          date.textContent = `${dateString}`;
-
-          root.append(name, geo, date);
-          document.body.append(root);
-          //add markers to map
-          const marker = L.marker([item.latitude, item.longitude], {
-            title: `${item.name}`,
-          }).addTo(userMap);
+        function getUserMood() {
+          return document.getElementById("mood-input").value;
         }
-      }
 
-      const buttonPosition = document.getElementById("button-1");
-      buttonPosition.addEventListener("click", getUserPosition);
-      const buttonMap = document.getElementById("button-2");
-      buttonMap.addEventListener("click", displayMap);
-      const buttonGetData = document.getElementById("button-3");
-      buttonGetData.addEventListener("click", getData);
+        async function getData() {
+          const response = await fetch("/api");
+          const data = await response.json();
+          console.log(data);
 
-      const usernameInputField = document.getElementById("name-input");
-      usernameInputField.addEventListener("keyup", (event) => {
-        if (event.key === "Enter") {
-          getUserPosition();
+          for (item of data) {
+            const root = document.createElement("div");
+            const mood = document.createElement("div");
+            const geo = document.createElement("div");
+            const date = document.createElement("div");
+            const image = document.createElement("img");
+
+            mood.textContent = `mood: ${item.usermood}`;
+            geo.textContent = `lat, lon: ${item.latitude}°, ${item.longitude}°`;
+            const dateString = new Date(item.timestamp).toLocaleString();
+            date.textContent = `${dateString}`;
+            image.src = item.image64 ? item.image64 : "rainbow.jpg";
+
+            root.classList.add("row");
+            root.append(mood, geo, date, image);
+            document.body.append(root);
+            //add markers to map
+            const marker = L.marker([item.latitude, item.longitude], {
+              title: `${item.mood}`,
+            }).addTo(userMap);
+          }
         }
-      });
 
+        const buttonPosition = document.getElementById("button-1");
+        buttonPosition.addEventListener("click", getUserPosition);
+        const buttonMap = document.getElementById("button-2");
+        buttonMap.addEventListener("click", displayMap);
+        const buttonGetData = document.getElementById("button-3");
+        buttonGetData.addEventListener("click", getData);
+
+        const usermoodInputField = document.getElementById("mood-input");
+        usermoodInputField.addEventListener("keyup", (event) => {
+          if (event.key === "Enter") {
+            getUserPosition();
+          }
+        });
+      }
     </script>
   </body>
 </html>
