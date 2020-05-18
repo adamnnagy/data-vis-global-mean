@@ -31,12 +31,11 @@
       longitude: <span id="longitude"></span>°
     </p>
 
-    <!-- <form action=""> -->
-      <input type="text" placeholder="Enter your name" id="name-input" />
-    <!-- </form> -->
+    <input type="text" placeholder="Enter your name" id="name-input" />
 
     <button id="button-1">Geolocate</button>
     <button id="button-2">Show on Map</button>
+    <button id="button-3">List The Entries!</button>
 
     <div id="userMap"></div>
 
@@ -87,7 +86,7 @@
             const coord = [latitude, longitude];
             const marker = L.marker([latitude, longitude]).addTo(userMap);
             marker.setLatLng([latitude, longitude]);
-            userMap.setView([latitude, longitude], 10);
+            userMap.setView([latitude, longitude], 12);
           });
         } else {
           console.log("geolocation IS NOT available");
@@ -98,10 +97,36 @@
         return document.getElementById("name-input").value;
       }
 
+      async function getData() {
+        const response = await fetch("/api");
+        const data = await response.json();
+        console.log(data);
+        for (item of data) {
+          const root = document.createElement("div");
+          const name = document.createElement("div");
+          const geo = document.createElement("div");
+          const date = document.createElement("div");
+
+          name.textContent = `name: ${item.username}`;
+          geo.textContent = `${item.latitude}°, ${item.longitude}°`;
+          const dateString = new Date(item.timestamp).toLocaleString();
+          date.textContent = `${dateString}`;
+
+          root.append(name, geo, date);
+          document.body.append(root);
+          //add markers to map
+          const marker = L.marker([item.latitude, item.longitude], {
+            title: `${item.name}`,
+          }).addTo(userMap);
+        }
+      }
+
       const buttonPosition = document.getElementById("button-1");
       buttonPosition.addEventListener("click", getUserPosition);
       const buttonMap = document.getElementById("button-2");
       buttonMap.addEventListener("click", displayMap);
+      const buttonGetData = document.getElementById("button-3");
+      buttonGetData.addEventListener("click", getData);
 
       const usernameInputField = document.getElementById("name-input");
       usernameInputField.addEventListener("keyup", (event) => {

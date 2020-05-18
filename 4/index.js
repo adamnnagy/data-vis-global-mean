@@ -15,6 +15,16 @@ app.use(
 const coordinatesDatabase = new Datastore("coordinatesDatabase.db");
 coordinatesDatabase.loadDatabase();
 
+app.get('/api', (request, response) => {
+  coordinatesDatabase.find({}, (err, data) => {
+    if (err) {
+      console.log(err);
+      
+    }
+    response.json(data);
+  })
+})
+
 app.post("/api", (request, response) => {
   console.log(request.body);
   const data = request.body;
@@ -22,13 +32,7 @@ app.post("/api", (request, response) => {
   data.date = new Date(Date.now());
   data.timestamp = timestamp;
   coordinatesDatabase.insert(data);
-  response.json({
-    status: "success",
-    username: data.username,
-    latitude: data.latitude,
-    longitude: data.longitude,
-    date: data.date,
-  });
+  response.json(data);
 
   const logInfo = `${data.latitude},${data.longitude},${data.date}\n`;
   fs.appendFile("records/records.csv", logInfo, (err) => {
