@@ -31,6 +31,10 @@
       longitude: <span id="longitude"></span>°
     </p>
 
+    <!-- <form action=""> -->
+      <input type="text" placeholder="Enter your name" id="name-input" />
+    <!-- </form> -->
+
     <button id="button-1">Geolocate</button>
     <button id="button-2">Show on Map</button>
 
@@ -47,7 +51,6 @@
 
       function getUserPosition() {
         if ("geolocation" in navigator) {
-          console.log("geolocation IS available");
           navigator.geolocation.getCurrentPosition(async (position) => {
             const { latitude, longitude } = position.coords;
             document.getElementById("latitude").textContent = latitude.toFixed(
@@ -58,7 +61,8 @@
             ).textContent = longitude.toFixed(2);
 
             //Posting to server api
-            const data = { latitude, longitude };
+            console.log(getUserName());
+            const data = { username: getUserName(), latitude, longitude };
             const options = {
               method: "POST",
               headers: {
@@ -78,7 +82,6 @@
 
       function displayMap() {
         if ("geolocation" in navigator) {
-          console.log("geolocation IS available");
           navigator.geolocation.getCurrentPosition((position) => {
             const { latitude, longitude } = position.coords;
             const coord = [latitude, longitude];
@@ -91,13 +94,22 @@
         }
       }
 
+      function getUserName() {
+        return document.getElementById("name-input").value;
+      }
+
       const buttonPosition = document.getElementById("button-1");
       buttonPosition.addEventListener("click", getUserPosition);
       const buttonMap = document.getElementById("button-2");
+      buttonMap.addEventListener("click", displayMap);
 
-      buttonMap.addEventListener("click", () => {
-        displayMap();
+      const usernameInputField = document.getElementById("name-input");
+      usernameInputField.addEventListener("keyup", (event) => {
+        if (event.key === "Enter") {
+          getUserPosition();
+        }
       });
+
     </script>
   </body>
 </html>
