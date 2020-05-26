@@ -36,9 +36,9 @@ function setup() {
             body: JSON.stringify(data),
           };
 
-          const response = await fetch("/api", options);
-          const json = await response.json();
-          console.log(json);
+          const db_response = await fetch("/api", options);
+          const db_json = await db_response.json();
+          console.log(db_json);
         });
       } else {
         console.log("geolocation IS NOT available");
@@ -80,6 +80,7 @@ function setup() {
         const dateString = new Date(item.timestamp).toLocaleString();
         date.textContent = `${dateString}`;
         image.src = item.image64 ? item.image64 : "rainbow.jpg";
+        image.alt = `The mood portrayed in this image is ${item.mood}`;
 
         root.classList.add("row");
         root.append(mood, geo, date, image);
